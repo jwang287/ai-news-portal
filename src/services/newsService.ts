@@ -1,6 +1,19 @@
 import type { NewsItem, NewsCategory } from '@/types/news';
 
-// 模拟新闻数据 - 实际项目中可以替换为真实的RSS API
+// GNews API 配置
+const GNEWS_API_KEY = import.meta.env.VITE_GNEWS_API_KEY || '97efbfef470aed16b8fd705cf76df442';
+const GNEWS_BASE_URL = 'https://gnews.io/api/v4';
+
+// 分类关键词映射
+const CATEGORY_KEYWORDS: Record<NewsCategory, string> = {
+  ai: 'artificial intelligence OR AI OR ChatGPT OR OpenAI OR machine learning',
+  tech: 'technology OR tech OR software OR hardware OR smartphone OR computer',
+  finance: 'finance OR economy OR stock market OR investment OR banking OR cryptocurrency',
+  breaking: 'breaking news OR urgent OR latest',
+  all: 'artificial intelligence OR technology OR finance'
+};
+
+// 备用模拟数据（API 失败时使用）
 const MOCK_NEWS: NewsItem[] = [
   {
     id: '1',
@@ -48,103 +61,14 @@ const MOCK_NEWS: NewsItem[] = [
     imageUrl: 'https://images.unsplash.com/photo-1569163139599-0f4517e36f51?w=800&q=80',
     url: '#',
     isBreaking: true
-  },
-  {
-    id: '5',
-    title: '苹果Vision Pro 2发布：更轻更便宜的MR头显',
-    summary: '苹果发布第二代Vision Pro，重量减轻40%，价格降至2999美元起，支持更多应用场景和开发者生态。',
-    category: 'tech',
-    author: '刘洋',
-    source: '数码时代',
-    publishedAt: new Date(Date.now() - 10800000).toISOString(),
-    imageUrl: 'https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?w=800&q=80',
-    url: '#'
-  },
-  {
-    id: '6',
-    title: '比特币突破10万美元：加密货币市场全面复苏',
-    summary: '比特币价格首次突破10万美元大关，以太坊、Solana等主流加密货币跟随上涨，市场情绪极度乐观。',
-    category: 'finance',
-    author: '赵敏',
-    source: '区块链观察',
-    publishedAt: new Date(Date.now() - 14400000).toISOString(),
-    imageUrl: 'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=800&q=80',
-    url: '#'
-  },
-  {
-    id: '7',
-    title: 'Claude 4发布：Anthropic推出新一代AI助手',
-    summary: 'Anthropic发布Claude 4，在代码理解、数学推理和长文本处理方面表现卓越，上下文窗口扩展至50万token。',
-    category: 'ai',
-    author: '孙伟',
-    source: 'AI日报',
-    publishedAt: new Date(Date.now() - 21600000).toISOString(),
-    imageUrl: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=80',
-    url: '#'
-  },
-  {
-    id: '8',
-    title: 'SpaceX星舰成功着陆：火星殖民计划迈出关键一步',
-    summary: 'SpaceX星舰原型机首次完成轨道飞行并成功软着陆，马斯克表示火星殖民计划将提前至2028年启动。',
-    category: 'tech',
-    author: '周磊',
-    source: '航天新闻',
-    publishedAt: new Date(Date.now() - 25200000).toISOString(),
-    imageUrl: 'https://images.unsplash.com/photo-1517976487492-5750f3195933?w=800&q=80',
-    url: '#'
-  },
-  {
-    id: '9',
-    title: '央行宣布降息25个基点：刺激经济增长',
-    summary: '为应对经济下行压力，央行宣布下调基准利率25个基点，专家预测将有效降低融资成本，提振市场信心。',
-    category: 'finance',
-    author: '吴芳',
-    source: '金融时报',
-    publishedAt: new Date(Date.now() - 28800000).toISOString(),
-    imageUrl: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&q=80',
-    url: '#'
-  },
-  {
-    id: '10',
-    title: '突发：重大网络安全漏洞影响全球数百万设备',
-    summary: '安全研究人员发现名为"零日危机"的严重漏洞，影响全球主流操作系统，建议用户立即更新补丁。',
-    category: 'breaking',
-    author: '郑涛',
-    source: '安全周刊',
-    publishedAt: new Date(Date.now() - 900000).toISOString(),
-    imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80',
-    url: '#',
-    isBreaking: true
-  },
-  {
-    id: '11',
-    title: 'Meta发布Llama 4：开源大模型新标杆',
-    summary: 'Meta发布Llama 4系列开源大模型，性能超越GPT-4，支持多语言和代码生成，免费供商业使用。',
-    category: 'ai',
-    author: '钱进',
-    source: '开源中国',
-    publishedAt: new Date(Date.now() - 32400000).toISOString(),
-    imageUrl: 'https://images.unsplash.com/photo-1676299081847-824916de030a?w=800&q=80',
-    url: '#'
-  },
-  {
-    id: '12',
-    title: '特斯拉FSD V13上线：自动驾驶能力大幅提升',
-    summary: '特斯拉推送FSD V13更新，城市街道自动驾驶能力显著改善，马斯克称已达到L4级别水平。',
-    category: 'tech',
-    author: '冯刚',
-    source: '汽车科技',
-    publishedAt: new Date(Date.now() - 36000000).toISOString(),
-    imageUrl: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80',
-    url: '#'
   }
 ];
 
 class NewsService {
   private static instance: NewsService;
-  private cache: NewsItem[] = [];
+  private cache: Map<NewsCategory, NewsItem[]> = new Map();
   private lastFetchTime: Date | null = null;
-  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
+  private readonly CACHE_DURATION = 10 * 60 * 1000; // 10分钟缓存
 
   private constructor() {}
 
@@ -155,26 +79,105 @@ class NewsService {
     return NewsService.instance;
   }
 
-  // 获取新闻列表
-  async fetchNews(category?: NewsCategory, forceRefresh = false): Promise<NewsItem[]> {
-    // 检查缓存
-    if (!forceRefresh && this.cache.length > 0 && this.lastFetchTime) {
-      const now = new Date();
-      const cacheAge = now.getTime() - this.lastFetchTime.getTime();
-      if (cacheAge < this.CACHE_DURATION) {
-        return this.filterByCategory(this.cache, category);
+  // 从 GNews API 获取新闻
+  private async fetchFromGNews(category: NewsCategory = 'all'): Promise<NewsItem[]> {
+    try {
+      const query = CATEGORY_KEYWORDS[category] || CATEGORY_KEYWORDS.all;
+      const url = `${GNEWS_BASE_URL}/search?q=${encodeURIComponent(query)}&lang=en&max=20&apikey=${GNEWS_API_KEY}`;
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`GNews API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.articles || !Array.isArray(data.articles)) {
+        throw new Error('Invalid response format');
+      }
+      
+      return data.articles.map((article: any, index: number) => this.transformGNewsArticle(article, index, category));
+    } catch (error) {
+      console.error('GNews API fetch failed:', error);
+      throw error;
+    }
+  }
+
+  // 转换 GNews 文章格式
+  private transformGNewsArticle(article: any, index: number, category: NewsCategory): NewsItem {
+    // 根据内容智能分类
+    const content = (article.title + ' ' + article.description).toLowerCase();
+    let smartCategory = category;
+    
+    if (category === 'all') {
+      if (content.includes('ai') || content.includes('artificial intelligence') || content.includes('chatgpt') || content.includes('openai') || content.includes('machine learning')) {
+        smartCategory = 'ai';
+      } else if (content.includes('stock') || content.includes('finance') || content.includes('economy') || content.includes('market') || content.includes('bank') || content.includes('crypto')) {
+        smartCategory = 'finance';
+      } else if (content.includes('breaking') || content.includes('urgent') || content.includes('alert')) {
+        smartCategory = 'breaking';
+      } else {
+        smartCategory = 'tech';
       }
     }
 
-    // 模拟API调用延迟
-    await new Promise(resolve => setTimeout(resolve, 800));
+    return {
+      id: `gnews-${Date.now()}-${index}`,
+      title: article.title || '无标题',
+      summary: article.description || article.content?.slice(0, 200) || '暂无摘要',
+      content: article.content || article.description || '',
+      category: smartCategory,
+      author: article.source?.name || '未知来源',
+      source: article.source?.name || 'GNews',
+      publishedAt: article.publishedAt || new Date().toISOString(),
+      imageUrl: article.image || `https://picsum.photos/800/400?random=${index}`,
+      url: article.url || '#',
+      isBreaking: smartCategory === 'breaking' || this.isBreakingNews(article.title)
+    };
+  }
 
-    // 实际项目中，这里应该调用真实的RSS API或新闻API
-    // 例如: RSSHub, NewsAPI, GNews等
-    this.cache = [...MOCK_NEWS];
+  // 判断是否为突发新闻
+  private isBreakingNews(title: string): boolean {
+    const breakingKeywords = ['breaking', 'urgent', 'alert', '突发', '紧急', '速报'];
+    return breakingKeywords.some(keyword => title.toLowerCase().includes(keyword.toLowerCase()));
+  }
+
+  // 获取新闻列表
+  async fetchNews(category?: NewsCategory, forceRefresh = false): Promise<NewsItem[]> {
+    const targetCategory = category || 'all';
+    
+    // 检查缓存
+    if (!forceRefresh) {
+      const cached = this.cache.get(targetCategory);
+      if (cached && cached.length > 0 && this.lastFetchTime) {
+        const now = new Date();
+        const cacheAge = now.getTime() - this.lastFetchTime.getTime();
+        if (cacheAge < this.CACHE_DURATION) {
+          console.log('Using cached news');
+          return this.filterByCategory(cached, category);
+        }
+      }
+    }
+
+    try {
+      // 尝试从 GNews API 获取
+      const news = await this.fetchFromGNews(targetCategory);
+      
+      if (news.length > 0) {
+        this.cache.set(targetCategory, news);
+        this.lastFetchTime = new Date();
+        return this.filterByCategory(news, category);
+      }
+    } catch (error) {
+      console.error('Failed to fetch from GNews, using fallback:', error);
+    }
+
+    // 如果 API 失败，使用备用数据
+    console.log('Using mock news data');
+    this.cache.set('all', MOCK_NEWS);
     this.lastFetchTime = new Date();
-
-    return this.filterByCategory(this.cache, category);
+    return this.filterByCategory(MOCK_NEWS, category);
   }
 
   // 根据分类过滤
@@ -187,24 +190,52 @@ class NewsService {
 
   // 获取突发新闻
   async fetchBreakingNews(): Promise<NewsItem[]> {
-    const allNews = await this.fetchNews();
+    const allNews = await this.fetchNews('all');
     return allNews.filter(item => item.isBreaking);
   }
 
   // 获取单条新闻
   async getNewsById(id: string): Promise<NewsItem | null> {
-    const allNews = await this.fetchNews();
+    // 尝试从缓存中查找
+    for (const [_, newsList] of this.cache) {
+      const found = newsList.find(item => item.id === id);
+      if (found) return found;
+    }
+    
+    // 如果没有找到，重新获取
+    const allNews = await this.fetchNews('all');
     return allNews.find(item => item.id === id) || null;
   }
 
   // 搜索新闻
   async searchNews(query: string): Promise<NewsItem[]> {
-    const allNews = await this.fetchNews();
-    const lowerQuery = query.toLowerCase();
-    return allNews.filter(item =>
-      item.title.toLowerCase().includes(lowerQuery) ||
-      item.summary.toLowerCase().includes(lowerQuery)
-    );
+    try {
+      // 使用 GNews 搜索 API
+      const url = `${GNEWS_BASE_URL}/search?q=${encodeURIComponent(query)}&lang=en&max=20&apikey=${GNEWS_API_KEY}`;
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Search API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.articles || !Array.isArray(data.articles)) {
+        return [];
+      }
+      
+      return data.articles.map((article: any, index: number) => this.transformGNewsArticle(article, index, 'all'));
+    } catch (error) {
+      console.error('Search failed:', error);
+      // 回退到本地搜索
+      const allNews = await this.fetchNews('all');
+      const lowerQuery = query.toLowerCase();
+      return allNews.filter(item =>
+        item.title.toLowerCase().includes(lowerQuery) ||
+        item.summary.toLowerCase().includes(lowerQuery)
+      );
+    }
   }
 
   // 获取最后更新时间
@@ -214,7 +245,7 @@ class NewsService {
 
   // 清除缓存
   clearCache(): void {
-    this.cache = [];
+    this.cache.clear();
     this.lastFetchTime = null;
   }
 }
