@@ -1,6 +1,7 @@
-import { RefreshCw, Clock, Wifi, WifiOff } from 'lucide-react';
+import { RefreshCw, Clock, Wifi, WifiOff, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCountdown } from '@/hooks/useCountdown';
+import { useIpAddress } from '@/hooks/useIpAddress';
 
 interface StatusBarProps {
   lastUpdated: Date | null;
@@ -11,6 +12,7 @@ interface StatusBarProps {
 
 export function StatusBar({ lastUpdated, loading = false, onRefresh, isOnline = true }: StatusBarProps) {
   const countdownText = useCountdown(lastUpdated);
+  const { ipInfo } = useIpAddress();
 
   const formatLastUpdated = (date: Date | null) => {
     if (!date) return '从未更新';
@@ -43,6 +45,23 @@ export function StatusBar({ lastUpdated, loading = false, onRefresh, isOnline = 
                 </>
               )}
             </div>
+
+            {/* Divider */}
+            <div className="w-px h-4 bg-white/20" />
+
+            {/* IP Address */}
+            {ipInfo && (
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <Globe className="w-4 h-4" />
+                <span className="hidden sm:inline">IP:</span>
+                <span className="text-white font-mono">{ipInfo.ip}</span>
+                {ipInfo.city && (
+                  <span className="text-gray-500 hidden md:inline">
+                    ({ipInfo.city}{ipInfo.country ? `, ${ipInfo.country}` : ''})
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Divider */}
             <div className="w-px h-4 bg-white/20" />
