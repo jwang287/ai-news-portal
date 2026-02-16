@@ -1,7 +1,7 @@
 import type { NewsItem, NewsCategory } from '@/types/news';
 
 // GNews API 配置
-const GNEWS_API_KEY = import.meta.env.VITE_GNEWS_API_KEY || '97efbfef470aed16b8fd705cf76df442';
+const GNEWS_API_KEY = import.meta.env.VITE_GNEWS_API_KEY;
 const GNEWS_BASE_URL = 'https://gnews.io/api/v4';
 
 // 分类关键词映射
@@ -81,6 +81,11 @@ class NewsService {
 
   // 从 GNews API 获取新闻
   private async fetchFromGNews(category: NewsCategory = 'all'): Promise<NewsItem[]> {
+    if (!GNEWS_API_KEY) {
+      console.warn('GNews API key not configured, using mock data');
+      return this.getMockNews();
+    }
+    
     try {
       const query = CATEGORY_KEYWORDS[category] || CATEGORY_KEYWORDS.all;
       const url = `${GNEWS_BASE_URL}/search?q=${encodeURIComponent(query)}&lang=en&max=20&apikey=${GNEWS_API_KEY}`;
@@ -100,8 +105,13 @@ class NewsService {
       return data.articles.map((article: any, index: number) => this.transformGNewsArticle(article, index, category));
     } catch (error) {
       console.error('GNews API fetch failed:', error);
-      throw error;
+      return this.getMockNews();
     }
+  }
+
+  // 获取模拟数据
+  private getMockNews(): NewsItem[] {
+    return MOCK_NEWS;
   }
 
   // 转换 GNews 文章格式
