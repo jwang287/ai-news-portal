@@ -55,9 +55,9 @@ export function StatusBar({ lastUpdated, loading = false, onRefresh, isOnline = 
                 <Globe className="w-4 h-4" />
                 <span className="hidden sm:inline">IP:</span>
                 <span className="text-white font-mono">{ipInfo.ip}</span>
-                {ipInfo.city && (
+                {(ipInfo.city || ipInfo.region) && (
                   <span className="text-gray-500 hidden md:inline">
-                    ({ipInfo.city}{ipInfo.country ? `, ${ipInfo.country}` : ''})
+                    ({ipInfo.region}{ipInfo.city ? ` · ${ipInfo.city}` : ''})
                   </span>
                 )}
               </div>
